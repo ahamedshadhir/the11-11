@@ -116,7 +116,14 @@ function Shop() {
               <ProductCard key={p.id} p={p} />
             ))}
           </div>
-          {items.length === 0 ? <p className="mt-10 text-muted">{t.noItems}</p> : null}
+          {items.length === 0 ? (
+            <div className="mt-10">
+              <p className="text-muted">{t.noItems}</p>
+              <Link to="/shop" className="mt-4 inline-flex min-h-11 items-center font-medium text-wine">
+                {t.all}
+              </Link>
+            </div>
+          ) : null}
         </div>
       </div>
     </Shell>

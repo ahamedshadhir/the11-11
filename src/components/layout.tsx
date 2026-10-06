@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { FormEvent, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Heart, MapPin, Search, ShoppingCart, ChevronDown } from "lucide-react";
+import { Heart, MapPin, Search, ShoppingCart, ChevronDown, User } from "lucide-react";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { isAdminEmail } from "@/lib/admin";
 import { CATEGORIES, QATAR_AREAS } from "@/lib/catalog";
@@ -143,6 +143,13 @@ export function Shell({ children }: { children: ReactNode }) {
 
             <Link
               to={user ? "/account" : "/login"}
+              className="grid size-11 place-items-center text-fg hover:text-wine sm:hidden"
+              aria-label={user ? t.account : t.helloSignIn}
+            >
+              <User className="size-5" strokeWidth={1.5} />
+            </Link>
+            <Link
+              to={user ? "/account" : "/login"}
               className="hidden h-11 items-center px-2 font-medium text-fg hover:text-wine sm:flex"
             >
               {isPending ? "…" : user ? (firstName ?? t.account) : t.helloSignIn}
@@ -204,8 +211,6 @@ export function Shell({ children }: { children: ReactNode }) {
           </div>
           <FooterCol title={lang === "ar" ? "من نحن" : "About Us"}>
             <Link to="/about">{lang === "ar" ? "قصتنا" : "Our Story"}</Link>
-            <Link to="/faq">{lang === "ar" ? "وظائف" : "Careers"}</Link>
-            <Link to="/contact">{lang === "ar" ? "الصحافة" : "Press"}</Link>
             <Link to="/blog">{lang === "ar" ? "المدونة" : "Blog"}</Link>
             <Link to="/sell" className="font-semibold text-gold">{lang === "ar" ? "كن بائعاً" : "Become a Seller"}</Link>
           </FooterCol>
@@ -259,6 +264,7 @@ function FooterCol({ title, children }: { title: string; children: ReactNode }) 
 }
 
 function CookieNote() {
+  const lang = useStore((s) => s.lang);
   const [ok, setOk] = useState(true);
   useEffect(() => {
     setOk(window.localStorage.getItem("t1111-cookies") === "1");
@@ -268,17 +274,25 @@ function CookieNote() {
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-card px-4 py-3 text-sm text-fg shadow-pop">
       <div className="store-wrap flex flex-wrap items-center justify-between gap-3">
         <p>
-          We use cookies, check our <Link to="/privacy" className="text-wine underline">Privacy Policies</Link>.
+          {lang === "ar" ? (
+            <>
+              نستخدم ملفات الارتباط. راجع <Link to="/privacy" className="text-wine underline">سياسة الخصوصية</Link>.
+            </>
+          ) : (
+            <>
+              We use cookies. See our <Link to="/privacy" className="text-wine underline">Privacy Policy</Link>.
+            </>
+          )}
         </p>
         <button
           type="button"
-          className="h-10 rounded-md bg-wine px-4 font-medium text-cream"
+          className="h-11 rounded-md bg-wine px-4 font-medium text-cream"
           onClick={() => {
             window.localStorage.setItem("t1111-cookies", "1");
             setOk(true);
           }}
         >
-          Agree
+          {lang === "ar" ? "موافق" : "Agree"}
         </button>
       </div>
     </div>

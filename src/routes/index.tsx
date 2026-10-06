@@ -25,10 +25,7 @@ function Home() {
       <section className="bg-wine text-cream">
         <div className="store-wrap grid items-center gap-8 py-10 md:grid-cols-2 md:py-14">
           <div>
-            <p className="text-sm font-medium tracking-wide text-gold">
-              {ar ? "حتى 50% على منتجات مختارة" : "up to 50% off on selected items"}
-            </p>
-            <h1 className="mt-3 max-w-xl font-sans text-4xl font-semibold leading-tight md:text-5xl">
+            <h1 className="mt-0 max-w-xl font-sans text-4xl font-semibold leading-tight md:text-5xl">
               {ar ? "توفير كبير على منتجاتك المفضلة" : "Huge saving on your favourite products!"}
             </h1>
             <Link

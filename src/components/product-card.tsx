@@ -6,6 +6,7 @@ import { COPY } from "@/lib/i18n";
 import { flashLive, salePrice, useStore } from "@/lib/store";
 import { qar } from "@/lib/utils";
 import { Stars } from "./stars";
+import { Button } from "@/components/ui/button";
 
 export function ProductCard({ p }: { p: Product }) {
   const lang = useStore((s) => s.lang);
@@ -41,7 +42,7 @@ export function ProductCard({ p }: { p: Product }) {
           aria-label={t.wishlist}
           aria-pressed={loved}
           onClick={() => toggleWish(p.id)}
-          className="absolute end-2 top-2 grid size-11 place-items-center text-muted hover:text-wine"
+          className="absolute end-2 top-2 grid size-11 place-items-center rounded-full bg-white/95 text-muted shadow-sm hover:text-wine"
         >
           <Heart className="size-4" strokeWidth={1.5} fill={loved ? "currentColor" : "none"} />
         </button>
@@ -59,19 +60,19 @@ export function ProductCard({ p }: { p: Product }) {
             <s className="ms-2 text-sm font-normal text-muted">{qar(onSale ? p.price : p.compareAt)}</s>
           ) : null}
         </p>
-        <button
+        <Button
           type="button"
-          className="mt-2 w-fit text-sm text-muted underline-offset-4 hover:text-wine hover:underline"
+          className="mt-3 w-full"
           onClick={() => {
             const inBag = cart.find((line) => line.id === p.id)?.qty ?? 0;
             if (p.stock <= 0 || inBag >= p.stock) return;
             add(p.id, 1, p.stock);
             toast.success(t.added);
           }}
-          disabled={p.stock <= 0}
+          disabled={p.stock <= 0 || (cart.find((line) => line.id === p.id)?.qty ?? 0) >= p.stock}
         >
-          {t.addToCart}
-        </button>
+          {p.stock <= 0 ? t.soldOut : t.addToCart}
+        </Button>
       </div>
     </article>
   );

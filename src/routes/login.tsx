@@ -30,8 +30,8 @@ function Login() {
   const [mode, setMode] = useState<"in" | "up">("in");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
-  const [email, setEmail] = useState(ADMIN_EMAIL);
-  const [password, setPassword] = useState(ADMIN_PASSWORD);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   function dest(nextEmail: string) {
     if (next) return next;
@@ -98,9 +98,6 @@ function Login() {
         <h1 className="mt-8 text-center font-display text-3xl font-medium text-wine">
           {mode === "in" ? t.login : t.create}
         </h1>
-        <p className="mt-2 text-center text-xs text-muted">
-          Admin · {ADMIN_EMAIL} · {ADMIN_PASSWORD}
-        </p>
         {authEnabled ? (
           <div className="mt-6 space-y-2">
             {GROK_PROVIDERS.map((p) => (
@@ -124,7 +121,7 @@ function Login() {
         </div>
         <form onSubmit={onEmail} className="grid gap-3">
           {mode === "up" ? (
-            <input name="name" placeholder={t.name} defaultValue={ADMIN_NAME} className="field" />
+            <input name="name" placeholder={t.name} className="field" />
           ) : null}
           <input
             required

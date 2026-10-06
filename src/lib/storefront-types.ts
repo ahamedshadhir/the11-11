@@ -65,8 +65,7 @@ export type StorefrontPayload = {
 };
 
 export const PRODUCT_TEMPLATE = `name,description,category,price,compare_at,stock,rating,image,action
-Sample Desk Lamp,Warm light for a Doha apartment,home,249,299,20,4.5,https://cdn.dummyjson.com/product-images/home-decoration/decoration-swing/thumbnail.webp,add
-Linen Throw,Soft throw for the sofa,home,189,220,15,4.4,https://cdn.dummyjson.com/product-images/home-decoration/wooden-bathroom-sink-with-mirror/thumbnail.webp,add
+White Sneakers,Lightweight street sneaker,fashion,200,250,9,5,/media/p8.jpg,add
 `;
 
 export const DEFAULT_PAGES: StorePages = {
