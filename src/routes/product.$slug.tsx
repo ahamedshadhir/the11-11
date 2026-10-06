@@ -23,6 +23,7 @@ function ProductPage() {
   const lang = useStore((s) => s.lang);
   const flash = useStore((s) => s.flash);
   const area = useStore((s) => s.area);
+  const cart = useStore((s) => s.cart);
   const add = useStore((s) => s.add);
   const toggleWish = useStore((s) => s.toggleWish);
   const wish = useStore((s) => s.wish);
@@ -58,7 +59,10 @@ function ProductPage() {
   const related = products.filter((x) => x.categoryId === product.categoryId && x.id !== product.id).slice(0, 4);
 
   function addBag() {
-    add(product.id, qty);
+    const inBag = cart.find((line) => line.id === product.id)?.qty ?? 0;
+    const room = product.stock - inBag;
+    if (room <= 0) return;
+    add(product.id, Math.min(qty, room), product.stock);
     toast.success(t.added);
   }
 

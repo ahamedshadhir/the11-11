@@ -10,6 +10,7 @@ import { Stars } from "./stars";
 export function ProductCard({ p }: { p: Product }) {
   const lang = useStore((s) => s.lang);
   const flash = useStore((s) => s.flash);
+  const cart = useStore((s) => s.cart);
   const add = useStore((s) => s.add);
   const wish = useStore((s) => s.wish);
   const toggleWish = useStore((s) => s.toggleWish);
@@ -62,8 +63,9 @@ export function ProductCard({ p }: { p: Product }) {
           type="button"
           className="mt-2 w-fit text-sm text-muted underline-offset-4 hover:text-wine hover:underline"
           onClick={() => {
-            if (p.stock <= 0) return;
-            add(p.id);
+            const inBag = cart.find((line) => line.id === p.id)?.qty ?? 0;
+            if (p.stock <= 0 || inBag >= p.stock) return;
+            add(p.id, 1, p.stock);
             toast.success(t.added);
           }}
           disabled={p.stock <= 0}

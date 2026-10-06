@@ -11,7 +11,7 @@ import { qar } from "@/lib/utils";
 const empty = (): ProductInput => ({
   name: "",
   description: "",
-  categoryId: "home",
+  categoryId: "computers",
   price: 99,
   compareAt: 0,
   stock: 24,

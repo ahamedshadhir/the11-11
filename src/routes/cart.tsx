@@ -53,9 +53,11 @@ function CartPage() {
                         {p.name}
                       </Link>
                       <p className="mt-1 text-sm tabular-nums text-wine">{qar(price)}</p>
-                      <p className="text-xs text-muted">{t.inStock}</p>
+                      <p className="text-xs text-muted">
+                        {p.stock > 0 ? `${t.inStock} · ${p.stock} ${t.left}` : t.soldOut}
+                      </p>
                       <div className="mt-3 flex flex-wrap items-center gap-3">
-                        <QtyStepper value={l.qty} onChange={(n) => setQty(l.id, n)} max={p.stock} />
+                        <QtyStepper value={l.qty} onChange={(n) => setQty(l.id, n, p.stock)} max={p.stock} />
                         <button type="button" className="text-sm text-muted hover:text-wine" onClick={() => remove(l.id)}>
                           {t.remove}
                         </button>

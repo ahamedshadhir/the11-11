@@ -40,8 +40,8 @@ type Store = {
   flash: FlashSale;
   setLang: (lang: Lang) => void;
   setArea: (area: string) => void;
-  add: (id: string, qty?: number) => void;
-  setQty: (id: string, qty: number) => void;
+  add: (id: string, qty?: number, maxStock?: number) => void;
+  setQty: (id: string, qty: number, maxStock?: number) => void;
   remove: (id: string) => void;
   clearCart: () => void;
   toggleWish: (id: string) => void;
@@ -97,20 +97,30 @@ export const useStore = create<Store>()(
       flash: defaultFlash,
       setLang: (lang) => set({ lang }),
       setArea: (area) => set({ area }),
-      add: (id, qty = 1) => {
+      add: (id, qty = 1, maxStock?: number) => {
+        const listed = PRODUCTS.find((p) => p.id === id);
+        const cap = Math.max(0, Math.floor(maxStock ?? listed?.stock ?? 99));
+        if (cap <= 0) return;
         const n = Math.max(1, Math.floor(qty));
         const cart = [...get().cart];
         const i = cart.findIndex((l) => l.id === id);
-        if (i >= 0) cart[i] = { ...cart[i], qty: cart[i].qty + n };
-        else cart.push({ id, qty: n });
+        const current = i >= 0 ? cart[i].qty : 0;
+        const next = Math.min(cap, current + n);
+        if (next === current) return;
+        if (i >= 0) cart[i] = { ...cart[i], qty: next };
+        else cart.push({ id, qty: next });
         set({ cart });
       },
-      setQty: (id, qty) =>
+      setQty: (id, qty, maxStock?: number) => {
+        const listed = PRODUCTS.find((p) => p.id === id);
+        const cap = Math.max(0, Math.floor(maxStock ?? listed?.stock ?? 99));
+        const next = Math.min(cap, Math.floor(qty));
         set({
           cart: get()
-            .cart.map((l) => (l.id === id ? { ...l, qty } : l))
+            .cart.map((l) => (l.id === id ? { ...l, qty: next } : l))
             .filter((l) => l.qty > 0),
-        }),
+        });
+      },
       remove: (id) => set({ cart: get().cart.filter((l) => l.id !== id) }),
       clearCart: () => set({ cart: [] }),
       toggleWish: (id) => {

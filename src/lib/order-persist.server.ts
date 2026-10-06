@@ -56,8 +56,10 @@ async function reprice(lines: { id: string; qty: number }[]) {
   const out: Order["lines"] = [];
   for (const line of lines) {
     const product = products.find((p) => p.id === line.id);
-    if (!product) continue;
-    const qty = Math.max(1, Math.min(product.stock, Math.floor(Number(line.qty) || 1)));
+    if (!product) throw new Error("An item in your cart is no longer available");
+    const qty = Math.floor(Number(line.qty) || 0);
+    if (product.stock <= 0 || qty < 1) throw new Error(`${product.name} is out of stock`);
+    if (qty > product.stock) throw new Error(`Only ${product.stock} left of ${product.name}`);
     out.push({
       id: product.id,
       name: product.name,
@@ -66,6 +68,36 @@ async function reprice(lines: { id: string; qty: number }[]) {
     });
   }
   return out;
+}
+
+async function takeStock(lines: Order["lines"]) {
+  const sql = await getSql();
+  const rows = await sql.query<{ id: string }>(
+    `update store_products as p
+     set stock = p.stock - v.qty
+     from unnest($1::text[], $2::int[]) as v(id, qty)
+     where p.id = v.id
+       and (
+         select count(*)::int
+         from unnest($1::text[], $2::int[]) as c(id, qty)
+         join store_products s on s.id = c.id
+         where s.stock >= c.qty
+       ) = $3
+     returning p.id`,
+    [lines.map((line) => line.id), lines.map((line) => line.qty), lines.length],
+  );
+  if (rows.length !== lines.length) throw new Error("Not enough stock for one of these items");
+}
+
+async function restoreStock(lines: Order["lines"]) {
+  const sql = await getSql();
+  await sql.query(
+    `update store_products as p
+     set stock = p.stock + v.qty
+     from unnest($1::text[], $2::int[]) as v(id, qty)
+     where p.id = v.id`,
+    [lines.map((line) => line.id), lines.map((line) => line.qty)],
+  );
 }
 
 function parsePayload(payload: unknown): Order {
@@ -178,7 +210,13 @@ export async function checkoutOrderForUser(userId: string, raw: CheckoutInput): 
     lines,
   };
 
-  await insertOrder(userId, order);
+  await takeStock(lines);
+  try {
+    await insertOrder(userId, order);
+  } catch (err) {
+    await restoreStock(lines);
+    throw err;
+  }
 
   if (data.pay !== "skipcash") {
     return { order, mode: "cod", payUrl: null };

@@ -22,6 +22,7 @@ type ProductRow = {
   compare_at: number | string;
   stock: number | string;
   rating: number | string;
+  reviews: number | string;
 };
 
 function num(value: number | string, fallback = 0) {
@@ -42,7 +43,7 @@ function asProduct(row: ProductRow): Product {
     compareAt: Math.round(num(row.compare_at, num(row.price))),
     stock: Math.max(0, Math.round(num(row.stock, 24))),
     rating: Math.min(5, Math.max(0, num(row.rating, 4.5))),
-    reviews: 0,
+    reviews: Math.max(0, Math.round(num(row.reviews, 0))),
   };
 }
 
@@ -94,7 +95,7 @@ export async function adminAccessFor(userId: string) {
 async function readRows() {
   const sql = await getSql();
   const products = await sql<ProductRow>`
-    select id, slug, name, description, image, category_id, price, compare_at, stock, rating
+    select id, slug, name, description, image, category_id, price, compare_at, stock, rating, reviews
     from store_products
     order by created_at desc
   `;
@@ -129,6 +130,15 @@ export async function loadCatalogProducts() {
 
 function cleanImage(raw: string) {
   const image = raw.trim();
+  if (
+    image.startsWith("/") &&
+    !image.startsWith("//") &&
+    !image.includes("..") &&
+    !image.includes("\\") &&
+    image.length <= 500
+  ) {
+    return image;
+  }
   if (!/^https?:\/\//i.test(image)) return "";
   if (image.length > 2000) return "";
   try {
@@ -167,13 +177,15 @@ function money(raw: string) {
   return Math.round(n);
 }
 
-function normalizeInput(input: ProductInput, id?: string): Product {
+function normalizeInput(input: ProductInput, id?: string, reviews = 0): Product {
   const name = input.name.trim().slice(0, 140);
   const image = cleanImage(input.image);
   const category = categoryId(input.categoryId) || (CATEGORIES.some((c) => c.id === input.categoryId) ? input.categoryId : "");
   if (name.length < 2) throw new Error("Product name is required");
-  if (!image) throw new Error("Image must be an https link");
-  if (!category) throw new Error("Pick a department: computers, phones, audio, accessories, home, fashion, beauty, sports");
+  if (!image) throw new Error("Image must be a site path or an https link");
+  if (!category) {
+    throw new Error(`Pick a department: ${CATEGORIES.map((c) => c.name).join(", ")}`);
+  }
   const price = Math.round(Number(input.price));
   if (!Number.isFinite(price) || price < 1) throw new Error("Price must be at least 1 QAR");
   const stock = Math.max(0, Math.min(9999, Math.round(Number(input.stock) || 0)));
@@ -192,6 +204,7 @@ function normalizeInput(input: ProductInput, id?: string): Product {
     compareAt,
     stock,
     rating,
+    reviews,
   };
 }
 
@@ -221,16 +234,17 @@ async function writeProduct(product: Product, updating: boolean) {
         price = ${saved.price},
         compare_at = ${saved.compareAt},
         stock = ${saved.stock},
-        rating = ${saved.rating}
+        rating = ${saved.rating},
+        reviews = ${saved.reviews}
       where id = ${saved.id}
     `;
   } else {
     await sql`
       insert into store_products
-        (id, slug, name, description, image, category_id, price, compare_at, stock, rating)
+        (id, slug, name, description, image, category_id, price, compare_at, stock, rating, reviews)
       values (
         ${saved.id}, ${saved.slug}, ${saved.name}, ${saved.description}, ${saved.image},
-        ${saved.categoryId}, ${saved.price}, ${saved.compareAt}, ${saved.stock}, ${saved.rating}
+        ${saved.categoryId}, ${saved.price}, ${saved.compareAt}, ${saved.stock}, ${saved.rating}, ${saved.reviews}
       )
     `;
   }
@@ -246,7 +260,11 @@ export async function saveProductForAdmin(userId: string, input: ProductInput) {
     ? await sql<{ id: string }>`select id from store_products where id = ${input.id} limit 1`
     : [];
   const id = input.id || `c-${slugify(input.name)}-${randomUUID().slice(0, 4)}`;
-  const product = normalizeInput({ ...input, categoryId: input.categoryId || catalog?.categoryId || "" }, id);
+  const product = normalizeInput(
+    { ...input, categoryId: input.categoryId || catalog?.categoryId || "" },
+    id,
+    catalog?.reviews ?? 0,
+  );
   const already =
     existing[0] ||
     (catalog
@@ -362,7 +380,7 @@ export async function importProductsForAdmin(userId: string, csv: string): Promi
       const price = money(record.price || "");
       const image = cleanImage(record.image || "");
       if (!record.name) throw new Error("Missing name");
-      if (!image) throw new Error("Image must be an https link");
+      if (!image) throw new Error("Image must be a site path or an https link");
       if (!category) throw new Error(`Unknown department “${record.category || ""}”`);
       if (!price) throw new Error("Price must be a number in QAR");
       const slug = slugify(record.name);
