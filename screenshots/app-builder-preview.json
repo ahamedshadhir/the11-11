@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "11-11",
+      "hasCanvas": false,
+      "bodyTextLen": 2233,
+      "bodyTextHash": "128385719affa4656e1388c06c55f63d779c637e7d418875e4a8105030d6f5a5",
+      "bodyTextPrefix": "up to 50% off on selected items Doha Doha Al Wakrah Al Rayyan Lu",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "11-11",
+      "hasCanvas": false,
+      "bodyTextLen": 2191,
+      "bodyTextHash": "d7ae12e731143274ae64e4747a982c74af116c9ce27668826e5abe3a2c3d70a1",
+      "bodyTextPrefix": "up to 50% off on selected items EN / AR All Computer & Laptop Sm",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
